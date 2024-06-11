@@ -29,10 +29,10 @@ jobs:
         appium -v
         appium &>/dev/null &
  
-    - name: Install Appium drivers
-      run: |
-        appium driver install uiautomator2
-        appium driver install xcuitest
+    # - name: Install Appium drivers
+    #   run: |
+    #     appium driver install uiautomator2
+    #     appium driver install xcuitest
  
     - name: Print Node.js version
       run: node -v
