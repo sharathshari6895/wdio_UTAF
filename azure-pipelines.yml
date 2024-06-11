@@ -1,0 +1,47 @@
+trigger:
+- main
+ 
+pool:
+  vmImage: ubuntu-latest
+ 
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: |
+      sudo apt-get update
+      sudo apt-get install -y wget apt-transport-https
+      wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+      echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+      sudo apt-get update
+      sudo apt-get install -y google-chrome-stable
+  displayName: 'Install Google Chrome'
+
+- script: |
+    sudo /opt/google/chrome/chrome --no-sandbox --disable-gpu --disable-dev-shm-usage &
+  displayName: 'Start Chrome'
+  
+- script: |
+    cd '$(Build.SourcesDirectory)'
+    npm install
+  displayName: 'Install Dependencies'
+ 
+- script: |
+    cd '$(Build.SourcesDirectory)'
+    npm run ui
+  displayName: 'Run webdriverio feature'
+  continueOnError: true
+ 
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/.tmp/report/'
+    Contents: '**'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+  
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'reports'
+    publishLocation: 'Container'
